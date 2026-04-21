@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Examples — WebHanger</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#030712; }
+    a { text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div data-wh-topnav></div>
+  
+  <div style="padding-top:80px; max-width:860px; margin:0 auto; padding:80px 24px;">
+    <h1 style="color:#fff; font-size:2rem; font-weight:700; margin-bottom:8px;">Examples</h1>
+    <p style="color:#6b7280; margin-bottom:40px;">Real-world usage patterns.</p>
+
+    <h2 style="color:#e5e7eb; font-size:1.1rem; font-weight:600; margin:32px 0 12px;">Plain HTML</h2>
+    <pre style="background:#111827; border:1px solid #1f2937; border-radius:12px; padding:16px; color:#a5f3fc; font-size:13px; overflow-x:auto;">&lt;div data-wh&gt;&lt;/div&gt;
+&lt;script src="https://unpkg.com/webhanger-front/browser.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  WebHangerFront.load(CDN_URL, PROJECT_ID, TOKEN, 0);
+&lt;/script&gt;</pre>
+
+    <h2 style="color:#e5e7eb; font-size:1.1rem; font-weight:600; margin:32px 0 12px;">React</h2>
+    <pre style="background:#111827; border:1px solid #1f2937; border-radius:12px; padding:16px; color:#a5f3fc; font-size:13px; overflow-x:auto;">import { load } from "webhanger-front";
+useEffect(() => { load(CDN_URL, PROJECT_ID, TOKEN, 0, "#nav"); }, []);</pre>
+
+    <h2 style="color:#e5e7eb; font-size:1.1rem; font-weight:600; margin:32px 0 12px;">With signal preloader</h2>
+    <pre style="background:#111827; border:1px solid #1f2937; border-radius:12px; padding:16px; color:#a5f3fc; font-size:13px; overflow-x:auto;">WebHangerFront.load(CDN_URL, PROJECT_ID, TOKEN, 0, "[data-wh]", ({ stage }) => {
+  if (stage === "start") showSpinner();
+  if (stage === "done")  hideSpinner();
+});</pre>
+  </div>
+
+  <div data-wh-footer></div>
+  
+  <script src="https://unpkg.com/webhanger-front@latest/browser.min.js"></script>
+  <script>
+    async function whInit(pageComponents) {
+      const res = await fetch("./wh-manifest.json");
+      const m = await res.json();
+      await WebHangerFront.clearCache();
+      for (const [name, selector] of Object.entries(pageComponents)) {
+        const c = m.components[name];
+        if (c) await WebHangerFront.load(c.url, m.pid, c.token, c.expires, selector);
+      }
+    }
+  </script>
+
+  <script>
+    whInit({"topnav":"[data-wh-topnav]","footer":"[data-wh-footer]"});
+  </script>
+</body>
+</html>
