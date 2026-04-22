@@ -1,0 +1,17 @@
+node_modules/
+webhanger.config.json
+firebase-service-account.json
+google-services.json
+*.config.json
+dist/
+docs/
+full-demo/
+nextjs-demo/
+atomized/
+breakdown-demo*/
+test-*.js
+test-*.txt
+*.zip
+.vscode/
+.env
+.env.*

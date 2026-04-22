@@ -1,0 +1,29 @@
+{
+  "name": "webhanger-front",
+  "version": "1.0.12",
+  "description": "WebHanger browser SDK — load encrypted UI components from CDN",
+  "main": "index.js",
+  "module": "index.js",
+  "browser": "browser.min.js",
+  "type": "module",
+  "files": [
+    "browser.min.js",
+    "index.js",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node build.js",
+    "prepublishOnly": "node build.js"
+  },
+  "keywords": [
+    "webhanger",
+    "cdn",
+    "components",
+    "frontend",
+    "sdk"
+  ],
+  "license": "ISC",
+  "devDependencies": {
+    "terser": "^5.0.0"
+  }
+}

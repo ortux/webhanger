@@ -1,0 +1,8 @@
+webhanger.config.json
+firebase-service-account.json
+google-services.json
+test.html
+components/
+.env
+*.log
+node_modules/
