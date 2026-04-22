@@ -1,448 +1,1698 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebHanger — Component-as-a-Service</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Instrument+Serif:ital@0;1&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="./index.5cf3cbe5.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebHanger — Component-as-a-Service</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050608;
+    --surface: #0d0e12;
+    --surface2: #13141a;
+    --border: #1e2028;
+    --accent: #5bffc0;
+    --accent2: #ff5b5b;
+    --accent3: #5b8fff;
+    --text: #e8eaf0;
+    --muted: #5a5d6e;
+    --dim: #2a2d3a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── Custom cursor ── */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid rgba(91,255,192,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: transform 0.15s ease-out, width 0.3s, height 0.3s;
+  }
+
+  /* ── Noise overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.5;
+  }
+
+  /* ── Grid background ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+    mask-image: radial-gradient(ellipse at 50% 0%, black 20%, transparent 70%);
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    background: rgba(5,6,8,0.8);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    clip-path: polygon(0 0, 70% 0, 100% 30%, 100% 100%, 30% 100%, 0 70%);
+    animation: logoPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes logoPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: none;
+    letter-spacing: 0.05em;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    transition: background 0.2s;
+  }
+
+  .nav-cta:hover { background: #7dffe0; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 120px 40px 80px;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(91,255,192,0.08) 0%, transparent 70%);
+    top: 10%; left: -10%;
+    pointer-events: none;
+    animation: glowDrift 8s ease-in-out infinite;
+  }
+
+  .hero-glow2 {
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(91,143,255,0.06) 0%, transparent 70%);
+    bottom: 20%; right: 5%;
+    pointer-events: none;
+    animation: glowDrift 10s ease-in-out infinite reverse;
+  }
+
+  @keyframes glowDrift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(30px, -20px); }
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s forwards;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 32px; height: 1px;
+    background: var(--accent);
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(52px, 8vw, 110px);
+    line-height: 0.9;
+    letter-spacing: -3px;
+    margin-bottom: 32px;
+    max-width: 900px;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.3s forwards;
+  }
+
+  .hero-title em {
+    font-style: normal;
+    color: var(--accent);
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+  }
+
+  .hero-sub {
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.8;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.4s forwards;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.5s forwards;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 14px 28px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    text-decoration: none;
+    cursor: none;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    transition: background 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.4s;
+  }
+
+  .btn-primary:hover::after { transform: translateX(100%); }
+  .btn-primary:hover { background: #7dffe0; transform: translateY(-2px); }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 14px 28px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    text-decoration: none;
+    cursor: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── TERMINAL ── */
+  .hero-terminal {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 420px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeLeft 0.8s 0.6s forwards;
+  }
+
+  @keyframes fadeLeft {
+    from { opacity: 0; transform: translateY(-50%) translateX(40px); }
+    to { opacity: 1; transform: translateY(-50%) translateX(0); }
+  }
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .terminal-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  .terminal-dot:nth-child(1) { background: #ff5f57; }
+  .terminal-dot:nth-child(2) { background: #febc2e; }
+  .terminal-dot:nth-child(3) { background: #28c840; }
+
+  .terminal-title {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .terminal-body {
+    padding: 20px;
+    font-size: 12px;
+    line-height: 1.9;
+  }
+
+  .t-prompt { color: var(--accent); }
+  .t-cmd { color: var(--text); }
+  .t-comment { color: var(--muted); font-style: italic; }
+  .t-success { color: #28c840; }
+  .t-info { color: var(--accent3); }
+  .t-dim { color: var(--dim); }
+
+  .type-cursor {
+    display: inline-block;
+    width: 7px; height: 13px;
+    background: var(--accent);
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  /* ── MARQUEE ── */
+  .marquee-wrap {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    padding: 12px 0;
+    background: var(--surface);
+    position: relative;
+    z-index: 1;
+  }
+
+  .marquee-track {
+    display: flex;
+    gap: 0;
+    white-space: nowrap;
+    animation: marquee 25s linear infinite;
+  }
+
+  .marquee-track span {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 32px;
+  }
+
+  .marquee-track span.accent { color: var(--accent); }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ── SECTIONS ── */
+  main { position: relative; z-index: 1; }
+
+  section {
+    padding: 100px 40px;
+    border-top: 1px solid var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: clamp(30px, 4vw, 48px);
+    letter-spacing: -1.5px;
+    line-height: 1;
+    margin-bottom: 48px;
+  }
+
+  /* ── QUICK START ── */
+  .quickstart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .qs-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .qs-step:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+  }
+
+  .qs-step::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s;
+  }
+
+  .qs-step:hover::before { transform: scaleX(1); }
+
+  .qs-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 60px;
+    font-weight: 800;
+    color: var(--dim);
+    line-height: 1;
+    margin-bottom: 12px;
+    transition: color 0.3s;
+  }
+
+  .qs-step:hover .qs-num { color: var(--accent); }
+
+  .qs-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  /* ── CODE BLOCKS ── */
+  pre, .code-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-x: auto;
+    position: relative;
+    margin: 12px 0;
+  }
+
+  pre::before {
+    content: attr(data-lang);
+    position: absolute;
+    top: 8px; right: 12px;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .k { color: var(--accent3); }
+  .s { color: var(--accent); }
+  .c { color: var(--muted); font-style: italic; }
+  .n { color: #ffb84d; }
+
+  /* ── COMMANDS TABLE ── */
+  .commands-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .cmd-card {
+    background: var(--surface);
+    padding: 24px;
+    transition: background 0.2s;
+    cursor: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cmd-card:hover { background: var(--surface2); }
+
+  .cmd-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+
+  .cmd-card:hover::after { transform: scaleX(1); }
+
+  .cmd-name {
+    font-size: 15px;
+    color: var(--accent);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cmd-star {
+    font-size: 10px;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 1px 6px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .cmd-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── SECURITY ── */
+  .security-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .sec-items {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sec-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .sec-item:hover {
+    border-color: var(--accent);
+    background: var(--surface2);
+  }
+
+  .sec-icon {
+    width: 36px; height: 36px;
+    flex-shrink: 0;
+    background: rgba(91,255,192,0.08);
+    border: 1px solid rgba(91,255,192,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .sec-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .sec-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── ARCH DIAGRAM ── */
+  .arch-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .arch-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .arch-phase {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .arch-phase:last-child { border-bottom: none; }
+
+  .arch-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    width: 80px;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  .arch-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .arch-pill {
+    font-size: 11px;
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, color 0.2s;
+    cursor: none;
+  }
+
+  .arch-pill:hover {
+    border-color: var(--accent3);
+    color: var(--accent3);
+  }
+
+  .arch-pill.green {
+    border-color: rgba(91,255,192,0.3);
+    color: var(--accent);
+  }
+
+  .arch-pill.blue {
+    border-color: rgba(91,143,255,0.3);
+    color: var(--accent3);
+  }
+
+  /* ── PACKAGES TABLE ── */
+  .pkg-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .pkg-table th {
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pkg-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    vertical-align: middle;
+  }
+
+  .pkg-table tr:last-child td { border-bottom: none; }
+  .pkg-table tr:hover td { background: var(--surface2); }
+
+  .pkg-name {
+    color: var(--accent);
+    font-size: 13px;
+  }
+
+  .pkg-install {
+    background: var(--surface2);
+    padding: 6px 12px;
+    color: var(--text);
+    font-size: 11px;
+  }
+
+  /* ── ROLES TABLE ── */
+  .roles-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .roles-table th {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .roles-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .roles-table tr:last-child td { border-bottom: none; }
+
+  .role-badge {
+    padding: 3px 10px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .role-owner { background: rgba(255,184,77,0.15); color: #ffb84d; }
+  .role-admin { background: rgba(91,143,255,0.15); color: var(--accent3); }
+  .role-deployer { background: rgba(91,255,192,0.12); color: var(--accent); }
+  .role-viewer { background: rgba(90,93,110,0.2); color: var(--muted); }
+
+  .check { color: var(--accent); }
+  .cross { color: var(--dim); }
+
+  /* ── USE CASES ── */
+  .cases-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .case-card {
+    background: var(--surface);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: background 0.2s;
+    cursor: none;
+  }
+
+  .case-card:hover { background: var(--surface2); }
+
+  .case-icon {
+    font-size: 22px;
+    width: 44px; height: 44px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .case-card:hover .case-icon {
+    border-color: var(--accent);
+    background: rgba(91,255,192,0.08);
+  }
+
+  .case-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .case-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── CACHING ── */
+  .cache-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .cache-card {
+    background: var(--surface);
+    padding: 28px;
+  }
+
+  .cache-layer {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .cache-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .cache-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 48px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .footer-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .footer-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .footer-sub {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .footer-badge {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(91,255,192,0.3);
+    padding: 6px 14px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--dim); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ── COMPONENT FILE TREE ── */
+  .tree {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 24px;
+    font-size: 13px;
+    line-height: 2;
+  }
+
+  .tree-dir { color: var(--accent3); }
+  .tree-file { color: var(--muted); }
+  .tree-note { color: var(--muted); font-style: italic; font-size: 11px; }
+  .tree-main { color: var(--accent); }
+
+  /* ── STAT STRIP ── */
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    margin-bottom: 48px;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    padding: 28px;
+  }
+
+  .stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+</style>
 </head>
-
 <body>
-    <div class="cursor" id="cursor"></div>
-    <div class="cursor-ring" id="cursorRing"></div>
-    <nav>
-        <div class="nav-logo">
-            <div class="logo-icon"></div> WebHanger
-        </div>
-        <ul class="nav-links">
-            <li><a href="#quickstart">Start</a></li>
-            <li><a href="#commands">CLI</a></li>
-            <li><a href="#security">Security</a></li>
-            <li><a href="#architecture">Arch</a></li>
-        </ul><button class="nav-cta">npm install -g webhanger</button>
-    </nav>
-    <section class="hero">
-        <div class="hero-glow"></div>
-        <div class="hero-glow2"></div>
-        <p class="hero-eyebrow">Component-as-a-Service</p>
-        <h1 class="hero-title">Ship<br><em>anywhere.</em><br>Load instantly.</h1>
-        <p class="hero-sub">Bundle once. AES-256 encrypt. Deploy to edge CDN. Drop into any site with a single HTML tag
-            — zero configuration, zero exposure.</p>
-        <div class="hero-actions"><a href="#quickstart" class="btn-primary"><span>→</span> Quick Start </a><a
-                href="#commands" class="btn-ghost">CLI Reference</a></div>
-        <div class="hero-terminal">
-            <div class="terminal-bar">
-                <div class="terminal-dot"></div>
-                <div class="terminal-dot"></div>
-                <div class="terminal-dot"></div><span class="terminal-title">webhanger — zsh</span>
-            </div>
-            <div class="terminal-body" id="termBody">
-                <div><span class="t-prompt">~</span><span class="t-comment"># install once</span></div>
-                <div><span class="t-prompt">~</span> npm install -g webhanger</div>
-                <div class="t-dim">+ webhanger@1.0.0 added</div><br>
-                <div><span class="t-prompt">~/myapp</span> wh init</div>
-                <div class="t-info">? Project name: <span class="t-cmd">my-app</span></div>
-                <div class="t-info">? Storage: <span class="t-cmd">s3</span></div>
-                <div class="t-success">✓ Bucket created, CDN provisioned</div><br>
-                <div><span class="t-prompt">~/myapp</span> wh ship ./components ./docs 1.0.0</div>
-                <div class="t-success">🚀 [1/4] navbar@1.0.0 ✅ hero@1.0.0 ✅</div>
-                <div class="t-success">🔍 [2/4] Resolving graph...</div>
-                <div class="t-success">🏗️ [3/4] Building → 4.2 kB</div>
-                <div class="t-success">📦 [4/4] deploy.zip ready</div><br>
-                <div><span class="t-prompt">~/myapp</span><span class="type-cursor"></span></div>
-            </div>
-        </div>
-    </section>
-    <div class="marquee-wrap">
-        <div class="marquee-track"><span class="accent">AES-256-GCM ENCRYPTION</span><span>·</span><span>EDGE CDN
-                DELIVERY</span><span>·</span><span class="accent">HMAC-SHA256 SIGNED URLS</span><span>·</span><span>S3 /
-                R2 / MINIO</span><span>·</span><span class="accent">DEPENDENCY GRAPH</span><span>·</span><span>FIREBASE
-                / SUPABASE</span><span>·</span><span class="accent">SERVICE WORKER
-                CACHE</span><span>·</span><span>MULTI-CDN FAILOVER</span><span>·</span><span class="accent">SHADOW DOM
-                ISOLATION</span><span>·</span><span>STALE-WHILE-REVALIDATE</span><span>·</span><span
-                class="accent">AES-256-GCM ENCRYPTION</span><span>·</span><span>EDGE CDN
-                DELIVERY</span><span>·</span><span class="accent">HMAC-SHA256 SIGNED URLS</span><span>·</span><span>S3 /
-                R2 / MINIO</span><span>·</span><span class="accent">DEPENDENCY GRAPH</span><span>·</span><span>FIREBASE
-                / SUPABASE</span><span>·</span><span class="accent">SERVICE WORKER
-                CACHE</span><span>·</span><span>MULTI-CDN FAILOVER</span><span>·</span><span class="accent">SHADOW DOM
-                ISOLATION</span><span>·</span><span>STALE-WHILE-REVALIDATE</span><span>·</span></div>
-    </div>
-    <main>
-        <section id="quickstart" style="border-top:none; padding-top: 80px;">
-            <div class="section-label">Packages</div>
-            <h2 class="section-title reveal">Two packages.<br>Everything you need.</h2>
-            <div class="stat-strip reveal">
-                <div class="stat-box">
-                    <div class="stat-val">256</div>
-                    <div class="stat-label">AES bit encryption</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-val">3</div>
-                    <div class="stat-label">Cache layers</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-val">6</div>
-                    <div class="stat-label">Framework targets</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-val">0</div>
-                    <div class="stat-label">Lines of config to load</div>
-                </div>
-            </div>
-            <table class="pkg-table reveal">
-                <thead>
-                    <tr>
-                        <th>Package</th>
-                        <th>Install</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><span class="pkg-name">webhanger</span></td>
-                        <td><code class="pkg-install">npm install -g webhanger</code></td>
-                        <td style="color:var(--muted)">CLI + Node.js library for deploy, build, encrypt, manage</td>
-                    </tr>
-                    <tr>
-                        <td><span class="pkg-name">webhanger-front</span></td>
-                        <td><code class="pkg-install">npm install webhanger-front</code></td>
-                        <td style="color:var(--muted)">Browser SDK for loading, decrypting, and rendering components
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
-        <section>
-            <div class="section-label">Quick Start</div>
-            <h2 class="section-title reveal">Up and running<br>in three steps.</h2>
-            <div class="quickstart-grid">
-                <div class="qs-step reveal">
-                    <div class="qs-num">01</div>
-                    <div class="qs-title">Install the CLI</div>
-                    <pre data-lang="bash"><span class="t-comment"># Global install</span> npm install -g webhanger</pre>
-                </div>
-                <div class="qs-step reveal">
-                    <div class="qs-num">02</div>
-                    <div class="qs-title">Init your project</div>
-                    <pre
-                        data-lang="bash">wh init <span class="t-comment"># Provisions S3 + CloudFront automatically</span><span class="t-comment"># Generates webhanger.config.json</span></pre>
-                </div>
-                <div class="qs-step reveal" style="grid-column: span 2;">
-                    <div class="qs-num">03</div>
-                    <div class="qs-title">Ship everything in one command</div>
-                    <pre
-                        data-lang="bash">wh ship ./components ./docs 1.0.0 ./dist <span class="t-comment"># Encrypts → uploads → builds → zips → done</span></pre>
-                </div>
-            </div>
-            <div style="margin-top: 32px;" class="reveal">
-                <div class="section-label" style="margin-bottom: 16px;">Load in any HTML page — zero JS required beyond
-                    the SDK</div>
-                <pre
-                    data-lang="html"><span class="k">&lt;script</span><span class="n">src</span>=<span class="s">"https://unpkg.com/webhanger-front@latest/browser.min.js"</span><span class="k">&gt;&lt;/script&gt;</span><span class="k">&lt;script&gt;</span>WebHangerFront.initialize(<span class="s">"./wh-manifest.json"</span>);<span class="k">&lt;/script&gt;</span><span class="k">&lt;wh-component</span><span class="n">name</span>=<span class="s">"navbar"</span><span class="k">&gt;&lt;/wh-component&gt;</span><span class="k">&lt;wh-component</span><span class="n">name</span>=<span class="s">"hero"</span><span class="k">&gt;&lt;/wh-component&gt;</span><span class="k">&lt;wh-component</span><span class="n">name</span>=<span class="s">"footer"</span><span class="n">sandbox</span><span class="k">&gt;&lt;/wh-component&gt;</span></pre>
-            </div>
-        </section>
-        <section id="commands">
-            <div class="section-label">CLI Reference</div>
-            <h2 class="section-title reveal">Every command<br>you need.</h2>
-            <div class="commands-grid reveal">
-                <div class="cmd-card">
-                    <div class="cmd-name">wh init</div>
-                    <div class="cmd-desc">Interactive setup. Provisions S3 bucket + CloudFront distribution
-                        automatically. Generates config.</div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">wh ship <span class="cmd-star">⭐ main</span></div>
-                    <div class="cmd-desc">Deploy + build + zip in one shot. Encrypts all components, resolves dependency
-                        graph, minifies site.</div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">wh deploy</div>
-                    <div class="cmd-desc">Deploy a single component. Prompts for token and expiry settings.</div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">wh graph-deploy</div>
-                    <div class="cmd-desc">Deploy all components in a directory and resolve the full dependency graph.
-                    </div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">wh build</div>
-                    <div class="cmd-desc">Production build — minifies HTML, inlines local CSS and JS for any static
-                        site.</div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">wh zip</div>
-                    <div class="cmd-desc">Zip a directory for deployment to Netlify, S3, cPanel, or any static host.
-                    </div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">wh analyze</div>
-                    <div class="cmd-desc">Detect framework, styling approach, and CDN dependencies automatically from a
-                        component directory.</div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">wh convert</div>
-                    <div class="cmd-desc">Convert vanilla HTML/CSS/JS to React, Vue, Svelte, Next, Angular, or Astro.
-                    </div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">wh access</div>
-                    <div class="cmd-desc">Role-based access control for teams. Grant, revoke, and list API keys with
-                        scoped permissions.</div>
-                </div>
-            </div>
-            <div class="reveal">
-                <div class="section-label" style="margin-bottom: 16px;">wh ship output</div>
-                <pre
-                    data-lang="output"><span class="t-success">🚀 [1/4] Deploying components...</span><span class="t-cmd">navbar@1.0.0... ✅</span><span class="t-cmd">hero@1.0.0... ✅</span><span class="t-info">🔍 [2/4] Resolving dependency graph...</span><span class="t-success">🏗️ [3/4] Building ./docs → ./dist...</span><span class="t-dim">index.html 4.2 kB</span><span class="t-success">📦 [4/4] Zipping ./dist...</span><span class="t-success">✅ Ship complete! deploy.zip (12.4 kB)</span></pre>
-            </div>
-        </section>
-        <section>
-            <div class="section-label">Component Structure</div>
-            <h2 class="section-title reveal">Simple.<br>Predictable. Portable.</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;" class="reveal">
-                <div>
-                    <div class="section-label" style="margin-bottom: 12px;">File layout</div>
-                    <div class="tree">
-                        <div><span class="tree-dir">components/</span></div>
-                        <div>&nbsp;&nbsp;<span class="tree-dir">navbar/</span></div>
-                        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-main">index.html</span>
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-note">← markup</span></div>
-                        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-file">style.css</span>
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-note">← styles</span></div>
-                        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-file">script.js</span>
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-note">← behaviour</span></div>
-                        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-file">webhanger.component.json</span></div>
-                    </div>
-                </div>
-                <div>
-                    <div class="section-label" style="margin-bottom: 12px;">webhanger.component.json</div>
-                    <pre
-                        data-lang="json">{ <span class="n">"assets"</span>: [ { <span class="n">"type"</span>: <span class="s">"script"</span>, <span class="n">"url"</span>: <span class="s">"cdn.tailwindcss.com"</span> }, { <span class="n">"type"</span>: <span class="s">"script"</span>, <span class="n">"url"</span>: <span class="s">"gsap.min.js"</span> } ], <span class="n">"dependencies"</span>: [<span class="s">"navbar@1.0.0"</span>, <span class="s">"chart@2.0.0"</span>] }</pre>
-                </div>
-            </div>
-        </section>
-        <section id="security">
-            <div class="section-label">Security</div>
-            <h2 class="section-title reveal">Encrypted at every<br>layer of the stack.</h2>
-            <div class="security-grid">
-                <div class="sec-items reveal">
-                    <div class="sec-item">
-                        <div class="sec-icon">🔐</div>
-                        <div>
-                            <div class="sec-title">AES-256-GCM Encryption</div>
-                            <div class="sec-desc">Every chunk (HTML/CSS/JS) is encrypted before upload. Key derived from
-                                SHA-256(projectId + salt). IV + tag + ciphertext stored as base64.</div>
-                        </div>
-                    </div>
-                    <div class="sec-item">
-                        <div class="sec-icon">🔏</div>
-                        <div>
-                            <div class="sec-title">HMAC-SHA256 Signed URLs</div>
-                            <div class="sec-desc">Every request is signed: token = HMAC-SHA256(projectId:path:expires,
-                                secretKey). Tamper-proof and project-scoped.</div>
-                        </div>
-                    </div>
-                    <div class="sec-item">
-                        <div class="sec-icon">✅</div>
-                        <div>
-                            <div class="sec-title">Integrity Check</div>
-                            <div class="sec-desc">SHA-256 hash of raw content stored in payload. Verified after
-                                decryption to detect any tampering in transit.</div>
-                        </div>
-                    </div>
-                    <div class="sec-item">
-                        <div class="sec-icon">🌐</div>
-                        <div>
-                            <div class="sec-title">Domain Restriction</div>
-                            <div class="sec-desc">Components refuse to load outside specified domains. Configured via
-                                <code style="color:var(--accent); font-size:11px">allowedDomains</code> option in the
-                                SDK.</div>
-                        </div>
-                    </div>
-                    <div class="sec-item">
-                        <div class="sec-icon">⏱</div>
-                        <div>
-                            <div class="sec-title">Token Expiry</div>
-                            <div class="sec-desc">Tokens can be set to never expire, or to expire in a defined number of
-                                seconds. Rotate without redeploying via <code
-                                    style="color:var(--accent); font-size:11px">wh.resign()</code>.</div>
-                        </div>
-                    </div>
-                    <div class="sec-item">
-                        <div class="sec-icon">📄</div>
-                        <div>
-                            <div class="sec-title">Manifest-based Delivery</div>
-                            <div class="sec-desc">Tokens, projectId, and CDN URLs never appear in HTML. Fetched at
-                                runtime from <code style="color:var(--accent); font-size:11px">wh-manifest.json</code>.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="reveal">
-                    <div class="section-label" style="margin-bottom: 16px;">Access roles</div>
-                    <table class="roles-table" style="background: var(--surface); border: 1px solid var(--border);">
-                        <thead>
-                            <tr>
-                                <th>Role</th>
-                                <th>Deploy</th>
-                                <th>Read</th>
-                                <th>Delete</th>
-                                <th>Manage</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><span class="role-badge role-owner">owner</span></td>
-                                <td class="check">✓</td>
-                                <td class="check">✓</td>
-                                <td class="check">✓</td>
-                                <td class="check">✓</td>
-                            </tr>
-                            <tr>
-                                <td><span class="role-badge role-admin">admin</span></td>
-                                <td class="check">✓</td>
-                                <td class="check">✓</td>
-                                <td class="check">✓</td>
-                                <td class="check">✓</td>
-                            </tr>
-                            <tr>
-                                <td><span class="role-badge role-deployer">deployer</span></td>
-                                <td class="check">✓</td>
-                                <td class="check">✓</td>
-                                <td class="cross">–</td>
-                                <td class="cross">–</td>
-                            </tr>
-                            <tr>
-                                <td><span class="role-badge role-viewer">viewer</span></td>
-                                <td class="cross">–</td>
-                                <td class="check">✓</td>
-                                <td class="cross">–</td>
-                                <td class="cross">–</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div style="margin-top: 24px;">
-                        <div class="section-label" style="margin-bottom: 12px;">Token expiry example</div>
-                        <pre
-                            data-lang="js"><span class="c">// Never expires</span> wh.deploy(<span class="s">"./navbar"</span>, <span class="s">"navbar"</span>, <span class="s">"1.0.0"</span>); <span class="c">// Expires in 24 hours</span> wh.deploy(<span class="s">"./navbar"</span>, <span class="s">"navbar"</span>, <span class="s">"1.0.0"</span>, { expiresInSeconds: <span class="n">86400</span> }); <span class="c">// Rotate without re-uploading</span><span class="k">await</span> wh.resign(<span class="s">"navbar"</span>, <span class="s">"1.0.0"</span>, { expiresInSeconds: <span class="n">3600</span> });</pre>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <section id="architecture">
-            <div class="section-label">Architecture</div>
-            <h2 class="section-title reveal">From source to screen —<br>fully automated.</h2>
-            <div class="arch-wrap reveal">
-                <div class="arch-flow">
-                    <div class="arch-phase">
-                        <div class="arch-label">Developer</div>
-                        <div class="arch-steps"><span class="arch-pill green">wh analyze</span><span
-                                class="arch-pill">bundle</span><span class="arch-pill green">AES-256-GCM</span><span
-                                class="arch-pill">SHA-256 hash</span><span class="arch-pill">S3 upload</span><span
-                                class="arch-pill green">HMAC sign</span><span class="arch-pill blue">Firestore
-                                register</span><span class="arch-pill">wh build</span><span class="arch-pill">wh
-                                zip</span></div>
-                    </div>
-                    <div class="arch-phase">
-                        <div class="arch-label">Edge</div>
-                        <div class="arch-steps"><span class="arch-pill green">token validate</span><span
-                                class="arch-pill">version resolve</span><span class="arch-pill blue">geo
-                                routing</span><span class="arch-pill">rate limit 100/min</span></div>
-                    </div>
-                    <div class="arch-phase">
-                        <div class="arch-label">Browser</div>
-                        <div class="arch-steps"><span class="arch-pill">fetch manifest</span><span
-                                class="arch-pill">check expiry</span><span
-                                class="arch-pill green">stale-while-revalidate</span><span class="arch-pill blue">CDN
-                                failover</span><span class="arch-pill">load CDN assets</span><span
-                                class="arch-pill">resolve dep graph</span><span class="arch-pill green">AES
-                                decrypt</span><span class="arch-pill green">integrity verify</span><span
-                                class="arch-pill">domain check</span><span class="arch-pill">inject
-                                HTML/CSS/JS</span><span class="arch-pill blue">lifecycle hooks</span><span
-                                class="arch-pill">emit metrics</span></div>
-                    </div>
-                </div>
-            </div>
-            <div style="margin-top: 24px;" class="reveal">
-                <div class="section-label" style="margin-bottom: 12px;">Multi-CDN failover config</div>
-                <pre
-                    data-lang="json">{ <span class="n">"cdn"</span>: { <span class="n">"url"</span>: <span class="s">"https://primary.cloudfront.net"</span>, <span class="n">"fallbacks"</span>: [ <span class="s">"https://fallback.r2.dev"</span>, <span class="s">"https://backup.b-cdn.net"</span> ] } }</pre>
-            </div>
-        </section>
-        <section>
-            <div class="section-label">Caching</div>
-            <h2 class="section-title reveal">Three-layer cache.<br>Always fast, always fresh.</h2>
-            <div class="cache-grid reveal">
-                <div class="cache-card">
-                    <div class="cache-layer">Layer 1</div>
-                    <div class="cache-name">localStorage</div>
-                    <div class="cache-desc">Components under 50KB are stored inline. Near-instant reads on subsequent
-                        loads — no network required.</div>
-                </div>
-                <div class="cache-card">
-                    <div class="cache-layer">Layer 2</div>
-                    <div class="cache-name">IndexedDB</div>
-                    <div class="cache-desc">Larger components (≥50KB) are stored in IndexedDB for structured persistence
-                        without size limits.</div>
-                </div>
-                <div class="cache-card">
-                    <div class="cache-layer">Layer 3</div>
-                    <div class="cache-name">Service Worker</div>
-                    <div class="cache-desc">Offline fallback via SW cache. Users get components even with no network.
-                        Stale-while-revalidate strategy throughout.</div>
-                </div>
-            </div>
-        </section>
-        <section>
-            <div class="section-label">Use Cases</div>
-            <h2 class="section-title reveal">Real-world<br>applications.</h2>
-            <div class="cases-grid reveal">
-                <div class="case-card">
-                    <div class="case-icon">🏢</div>
-                    <div class="case-title">Enterprise Micro-frontends</div>
-                    <div class="case-desc">Shared UI across 50+ apps. Update once, propagate everywhere instantly.</div>
-                </div>
-                <div class="case-card">
-                    <div class="case-icon">🎓</div>
-                    <div class="case-title">Education Platforms</div>
-                    <div class="case-desc">Push UI updates to all school sites simultaneously without their involvement.
-                    </div>
-                </div>
-                <div class="case-card">
-                    <div class="case-icon">📡</div>
-                    <div class="case-title">Low-bandwidth Regions</div>
-                    <div class="case-desc">Cache once, serve offline via Service Worker. Works in challenging
-                        connectivity.</div>
-                </div>
-                <div class="case-card">
-                    <div class="case-icon">🛡</div>
-                    <div class="case-title">Security Platforms</div>
-                    <div class="case-desc">Inject warnings and banners dynamically across all managed sites in real
-                        time.</div>
-                </div>
-                <div class="case-card">
-                    <div class="case-icon">🏷</div>
-                    <div class="case-title">White-label SaaS</div>
-                    <div class="case-desc">Per-tenant component customization. Each customer sees their own branded UI.
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-    <footer>
-        <div class="footer-left">
-            <div class="footer-logo">
-                <div class="logo-icon" style="width:20px; height:20px;"></div> WebHanger
-            </div>
-            <div class="footer-sub">Component-as-a-Service &mdash; ISC License</div>
-        </div><span class="footer-badge">v1.0.0</span>
-    </footer>
-    <script src="./index.2ef5d620.js"></script>
-</body>
 
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon"></div>
+    WebHanger
+  </div>
+  <ul class="nav-links">
+    <li><a href="#quickstart">Start</a></li>
+    <li><a href="#commands">CLI</a></li>
+    <li><a href="#security">Security</a></li>
+    <li><a href="#architecture">Arch</a></li>
+  </ul>
+  <button class="nav-cta">npm install -g webhanger</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+
+  <p class="hero-eyebrow">Component-as-a-Service</p>
+  <h1 class="hero-title">Ship<br><em>anywhere.</em><br>Load instantly.</h1>
+  <p class="hero-sub">Bundle once. AES-256 encrypt. Deploy to edge CDN. Load into any website or framework with a single tag — no tokens in HTML, no exposed secrets, no configuration.</p>
+  <div class="hero-actions">
+    <a href="#quickstart" class="btn-primary">
+      <span>→</span> Quick Start
+    </a>
+    <a href="#commands" class="btn-ghost">CLI Reference</a>
+  </div>
+
+  <div class="hero-terminal">
+    <div class="terminal-bar">
+      <div class="terminal-dot"></div>
+      <div class="terminal-dot"></div>
+      <div class="terminal-dot"></div>
+      <span class="terminal-title">webhanger — zsh</span>
+    </div>
+    <div class="terminal-body" id="termBody">
+      <div><span class="t-prompt">~</span> <span class="t-comment"># install once</span></div>
+      <div><span class="t-prompt">~</span> npm install -g webhanger</div>
+      <div class="t-dim">+ webhanger@1.0.0 added</div>
+      <br>
+      <div><span class="t-prompt">~/myapp</span> wh init</div>
+      <div class="t-info">? Project name: <span class="t-cmd">my-app</span></div>
+      <div class="t-info">? Storage: <span class="t-cmd">s3</span></div>
+      <div class="t-success">✓ Bucket created, CDN provisioned</div>
+      <br>
+      <div><span class="t-prompt">~/myapp</span> wh ship ./components ./docs 1.0.0</div>
+      <div class="t-success">🚀 [1/4] navbar@1.0.0 ✅ hero@1.0.0 ✅</div>
+      <div class="t-success">🔍 [2/4] Resolving graph...</div>
+      <div class="t-success">🏗️  [3/4] Building → 4.2 kB</div>
+      <div class="t-success">📦 [4/4] deploy.zip ready</div>
+      <br>
+      <div><span class="t-prompt">~/myapp</span> <span class="type-cursor"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="accent">AES-256-GCM ENCRYPTION</span><span>·</span>
+    <span>EDGE CDN DELIVERY</span><span>·</span>
+    <span class="accent">HMAC-SHA256 SIGNED URLS</span><span>·</span>
+    <span>S3 / R2 / MINIO</span><span>·</span>
+    <span class="accent">DEPENDENCY GRAPH</span><span>·</span>
+    <span>FIREBASE / SUPABASE</span><span>·</span>
+    <span class="accent">SERVICE WORKER CACHE</span><span>·</span>
+    <span>MULTI-CDN FAILOVER</span><span>·</span>
+    <span class="accent">SHADOW DOM ISOLATION</span><span>·</span>
+    <span>STALE-WHILE-REVALIDATE</span><span>·</span>
+    <!-- duplicate for seamless loop -->
+    <span class="accent">AES-256-GCM ENCRYPTION</span><span>·</span>
+    <span>EDGE CDN DELIVERY</span><span>·</span>
+    <span class="accent">HMAC-SHA256 SIGNED URLS</span><span>·</span>
+    <span>S3 / R2 / MINIO</span><span>·</span>
+    <span class="accent">DEPENDENCY GRAPH</span><span>·</span>
+    <span>FIREBASE / SUPABASE</span><span>·</span>
+    <span class="accent">SERVICE WORKER CACHE</span><span>·</span>
+    <span>MULTI-CDN FAILOVER</span><span>·</span>
+    <span class="accent">SHADOW DOM ISOLATION</span><span>·</span>
+    <span>STALE-WHILE-REVALIDATE</span><span>·</span>
+  </div>
+</div>
+
+<main>
+
+<!-- PACKAGES -->
+<section id="quickstart" style="border-top:none; padding-top: 80px;">
+  <div class="section-label">Packages</div>
+  <h2 class="section-title reveal">Two packages.<br>Everything you need.</h2>
+
+  <div class="stat-strip reveal">
+    <div class="stat-box">
+      <div class="stat-val">256</div>
+      <div class="stat-label">AES bit encryption</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">3</div>
+      <div class="stat-label">Cache layers</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">6</div>
+      <div class="stat-label">Framework targets</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">0</div>
+      <div class="stat-label">Lines of config to load</div>
+    </div>
+  </div>
+
+  <table class="pkg-table reveal">
+    <thead>
+      <tr>
+        <th>Package</th>
+        <th>Install</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="pkg-name">webhanger</span></td>
+        <td><code class="pkg-install">npm install -g webhanger</code></td>
+        <td style="color:var(--muted)">CLI + Node.js library for deploy, build, encrypt, manage</td>
+      </tr>
+      <tr>
+        <td><span class="pkg-name">webhanger-front</span></td>
+        <td><code class="pkg-install">npm install webhanger-front</code></td>
+        <td style="color:var(--muted)">Browser + ESM SDK — custom elements, React/Next.js/Vite support</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- QUICK START -->
+<section>
+  <div class="section-label">Quick Start</div>
+  <h2 class="section-title reveal">Up and running<br>in three steps.</h2>
+
+  <div class="quickstart-grid">
+    <div class="qs-step reveal">
+      <div class="qs-num">01</div>
+      <div class="qs-title">Install the CLI</div>
+      <pre data-lang="bash"><span class="t-comment"># Global install</span>
+npm install -g webhanger</pre>
+    </div>
+    <div class="qs-step reveal">
+      <div class="qs-num">02</div>
+      <div class="qs-title">Init your project</div>
+      <pre data-lang="bash">wh init
+<span class="t-comment"># Provisions S3 + CloudFront automatically</span>
+<span class="t-comment"># Generates webhanger.config.json</span></pre>
+    </div>
+    <div class="qs-step reveal" style="grid-column: span 2;">
+      <div class="qs-num">03</div>
+      <div class="qs-title">Ship everything in one command</div>
+      <pre data-lang="bash">wh ship ./components ./docs 1.0.0 ./dist
+<span class="t-comment"># Encrypts → uploads → builds → zips → done</span></pre>
+    </div>
+  </div>
+
+  <div style="margin-top: 32px;" class="reveal">
+    <div class="section-label" style="margin-bottom: 16px;">Load in any HTML page — zero JS required beyond the SDK</div>
+    <pre data-lang="html"><span class="k">&lt;script</span> <span class="n">src</span>=<span class="s">"https://unpkg.com/webhanger-front@latest/browser.min.js"</span><span class="k">&gt;&lt;/script&gt;</span>
+<span class="k">&lt;script&gt;</span>WebHangerFront.initialize(<span class="s">"./wh-manifest.json"</span>);<span class="k">&lt;/script&gt;</span>
+
+<span class="k">&lt;wh-component</span> <span class="n">name</span>=<span class="s">"navbar"</span><span class="k">&gt;&lt;/wh-component&gt;</span>
+<span class="k">&lt;wh-component</span> <span class="n">name</span>=<span class="s">"hero"</span><span class="k">&gt;&lt;/wh-component&gt;</span>
+<span class="k">&lt;wh-component</span> <span class="n">name</span>=<span class="s">"footer"</span> <span class="n">sandbox</span><span class="k">&gt;&lt;/wh-component&gt;</span></pre>
+  </div>
+
+  <div style="margin-top: 24px;" class="reveal">
+    <div class="section-label" style="margin-bottom: 16px;">Load in Next.js / React / Vite via ESM</div>
+    <pre data-lang="tsx"><span class="k">import</span> { load } <span class="k">from</span> <span class="s">"webhanger-front"</span>;
+
+<span class="k">useEffect</span>(() => {
+  fetch(<span class="s">"/wh-manifest.json"</span>)
+    .then(r => r.json())
+    .then(m => {
+      <span class="k">const</span> c = m.components[<span class="s">"navbar"</span>];
+      load(c.urls || c.url, m.pid, c.token, c.expires, <span class="s">"#nav-mount"</span>);
+    });
+}, []);</pre>
+  </div>
+</section>
+
+<!-- COMMANDS -->
+<section id="commands">
+  <div class="section-label">CLI Reference</div>
+  <h2 class="section-title reveal">Every command<br>you need.</h2>
+
+  <div class="commands-grid reveal">
+    <div class="cmd-card">
+      <div class="cmd-name">wh init</div>
+      <div class="cmd-desc">Interactive setup. Provisions S3 bucket + CloudFront automatically. Supports Firebase, Supabase, MongoDB. Optional Edge Worker.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">wh ship <span class="cmd-star">⭐ main</span></div>
+      <div class="cmd-desc">Deploy + build + zip in one shot. Encrypts all components, resolves dependency graph, minifies site, writes manifest.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">wh deploy</div>
+      <div class="cmd-desc">Deploy a single component. Prompts for token and expiry settings.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">wh graph-deploy</div>
+      <div class="cmd-desc">Deploy all components in a directory and resolve the full dependency graph.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">wh atomize <span class="cmd-star" style="background:var(--accent3);color:var(--bg)">new</span></div>
+      <div class="cmd-desc">Split a single HTML page into CDN-powered components automatically. Goes from monolith to micro-frontend in one command.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">wh breakdown <span class="cmd-star" style="background:var(--accent3);color:var(--bg)">new</span></div>
+      <div class="cmd-desc">Extract embedded <code style="color:var(--accent);font-size:10px">&lt;style&gt;</code> and <code style="color:var(--accent);font-size:10px">&lt;script&gt;</code> tags from a single HTML file into separate files.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">wh build</div>
+      <div class="cmd-desc">Production build — minifies HTML, extracts embedded CSS/JS to content-hashed files.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">wh analyze</div>
+      <div class="cmd-desc">Detect framework, styling approach, and CDN dependencies automatically from a component directory.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">wh convert</div>
+      <div class="cmd-desc">Convert vanilla HTML/CSS/JS to React, Vue, Svelte, Next, Angular, or Astro.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">wh zip</div>
+      <div class="cmd-desc">Zip a directory for deployment to Netlify, S3, cPanel, or any static host.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">wh access</div>
+      <div class="cmd-desc">Role-based access control for teams. Grant, revoke, and list API keys with scoped permissions.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">wh edge-init</div>
+      <div class="cmd-desc">Setup Cloudflare Edge Worker — token validation (~5ms), version resolution, geo routing, rate limiting.</div>
+    </div>
+  </div>
+
+  <div class="reveal">
+    <div class="section-label" style="margin-bottom: 16px;">wh ship output</div>
+    <pre data-lang="output"><span class="t-success">🚀 [1/4] Deploying components...</span>
+  <span class="t-cmd">navbar@1.0.0...  ✅</span>
+  <span class="t-cmd">hero@1.0.0...    ✅</span>
+
+<span class="t-info">🔍 [2/4] Resolving dependency graph...</span>
+
+<span class="t-success">🏗️  [3/4] Building ./docs → ./dist...</span>
+  <span class="t-dim">index.html   4.2 kB</span>
+
+<span class="t-success">📦 [4/4] Zipping ./dist...</span>
+
+<span class="t-success">✅ Ship complete!  deploy.zip (12.4 kB)</span></pre>
+  </div>
+</section>
+
+<!-- COMPONENT STRUCTURE -->
+<section>
+  <div class="section-label">Component Structure</div>
+  <h2 class="section-title reveal">Simple.<br>Predictable. Portable.</h2>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;" class="reveal">
+    <div>
+      <div class="section-label" style="margin-bottom: 12px;">File layout</div>
+      <div class="tree">
+        <div><span class="tree-dir">components/</span></div>
+        <div>&nbsp;&nbsp;<span class="tree-dir">navbar/</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-main">index.html</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-note">← markup</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-file">style.css</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-note">← styles</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-file">script.js</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-note">← behaviour</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-file">webhanger.component.json</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-label" style="margin-bottom: 12px;">webhanger.component.json</div>
+      <pre data-lang="json">{
+  <span class="n">"assets"</span>: [
+    { <span class="n">"type"</span>: <span class="s">"script"</span>, <span class="n">"url"</span>: <span class="s">"cdn.tailwindcss.com"</span> },
+    { <span class="n">"type"</span>: <span class="s">"script"</span>, <span class="n">"url"</span>: <span class="s">"gsap.min.js"</span> }
+  ],
+  <span class="n">"dependencies"</span>: [<span class="s">"navbar@1.0.0"</span>, <span class="s">"chart@2.0.0"</span>]
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- NEXT.JS INTEGRATION -->
+<section>
+  <div class="section-label">Framework Integration</div>
+  <h2 class="section-title reveal">Works in Next.js,<br>React, Vite — natively.</h2>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;" class="reveal">
+    <div>
+      <div class="section-label" style="margin-bottom: 12px;">Reusable React component</div>
+      <pre data-lang="tsx"><span class="s">"use client"</span>;
+<span class="k">import</span> { useEffect, useRef } <span class="k">from</span> <span class="s">"react"</span>;
+<span class="k">import</span> { load } <span class="k">from</span> <span class="s">"webhanger-front"</span>;
+
+<span class="k">export default function</span> <span class="n">WHComponent</span>({ name }) {
+  <span class="k">const</span> ref = useRef(<span class="k">null</span>);
+
+  useEffect(() => {
+    fetch(<span class="s">"/wh-manifest.json"</span>)
+      .then(r => r.json())
+      .then(m => {
+        <span class="k">const</span> c = m.components[name];
+        <span class="k">if</span> (!c || !ref.current) <span class="k">return</span>;
+        ref.current.id = <span class="s">`wh-${name}`</span>;
+        load(c.urls || c.url, m.pid,
+             c.token, c.expires,
+             <span class="s">`#wh-${name}`</span>);
+      });
+  }, [name]);
+
+  <span class="k">return</span> &lt;<span class="n">div</span> ref={ref} /&gt;;
+}</pre>
+    </div>
+    <div>
+      <div class="section-label" style="margin-bottom: 12px;">Use in app/page.tsx</div>
+      <pre data-lang="tsx"><span class="k">import</span> WHComponent <span class="k">from</span> <span class="s">"@/components/WHComponent"</span>;
+
+<span class="k">export default function</span> <span class="n">Home</span>() {
+  <span class="k">return</span> (
+    &lt;<span class="n">main</span>&gt;
+      &lt;<span class="n">WHComponent</span> name=<span class="s">"navbar"</span> /&gt;
+      &lt;<span class="n">WHComponent</span> name=<span class="s">"hero"</span> /&gt;
+      &lt;<span class="n">WHComponent</span> name=<span class="s">"footer"</span> /&gt;
+    &lt;/<span class="n">main</span>&gt;
+  );
+}</pre>
+      <div style="margin-top: 20px;">
+        <div class="section-label" style="margin-bottom: 12px;">ESM named exports</div>
+        <pre data-lang="js"><span class="k">import</span> {
+  load, use, on,
+  registerSW, clearCache,
+  metrics, gpu
+} <span class="k">from</span> <span class="s">"webhanger-front"</span>;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="security">
+  <div class="section-label">Security</div>
+  <h2 class="section-title reveal">Encrypted at every<br>layer of the stack.</h2>
+
+  <div class="security-grid">
+    <div class="sec-items reveal">
+      <div class="sec-item">
+        <div class="sec-icon">🔐</div>
+        <div>
+          <div class="sec-title">AES-256-GCM Encryption</div>
+          <div class="sec-desc">Every chunk (HTML/CSS/JS) is encrypted before upload. Key derived from SHA-256(projectId + salt). IV + tag + ciphertext stored as base64.</div>
+        </div>
+      </div>
+      <div class="sec-item">
+        <div class="sec-icon">🔏</div>
+        <div>
+          <div class="sec-title">HMAC-SHA256 Signed URLs</div>
+          <div class="sec-desc">Every request is signed: token = HMAC-SHA256(projectId:path:expires, secretKey). Tamper-proof and project-scoped.</div>
+        </div>
+      </div>
+      <div class="sec-item">
+        <div class="sec-icon">✅</div>
+        <div>
+          <div class="sec-title">Integrity Check</div>
+          <div class="sec-desc">SHA-256 hash of raw content stored in payload. Verified after decryption to detect any tampering in transit.</div>
+        </div>
+      </div>
+      <div class="sec-item">
+        <div class="sec-icon">🌐</div>
+        <div>
+          <div class="sec-title">Domain Restriction</div>
+          <div class="sec-desc">Components refuse to load outside specified domains. Configured via <code style="color:var(--accent); font-size:11px">allowedDomains</code> option in the SDK.</div>
+        </div>
+      </div>
+      <div class="sec-item">
+        <div class="sec-icon">⏱</div>
+        <div>
+          <div class="sec-title">Token Expiry</div>
+          <div class="sec-desc">Tokens can be set to never expire, or to expire in a defined number of seconds. Rotate without redeploying via <code style="color:var(--accent); font-size:11px">wh.resign()</code>.</div>
+        </div>
+      </div>
+      <div class="sec-item">
+        <div class="sec-icon">📄</div>
+        <div>
+          <div class="sec-title">Manifest-based Delivery</div>
+          <div class="sec-desc">Tokens, projectId, and CDN URLs never appear in HTML. Fetched at runtime from <code style="color:var(--accent); font-size:11px">wh-manifest.json</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <div class="section-label" style="margin-bottom: 16px;">Access roles</div>
+      <table class="roles-table" style="background: var(--surface); border: 1px solid var(--border);">
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>Deploy</th>
+            <th>Read</th>
+            <th>Delete</th>
+            <th>Manage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="role-badge role-owner">owner</span></td>
+            <td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge role-admin">admin</span></td>
+            <td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge role-deployer">deployer</span></td>
+            <td class="check">✓</td><td class="check">✓</td><td class="cross">–</td><td class="cross">–</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge role-viewer">viewer</span></td>
+            <td class="cross">–</td><td class="check">✓</td><td class="cross">–</td><td class="cross">–</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: 24px;">
+        <div class="section-label" style="margin-bottom: 12px;">Token expiry example</div>
+        <pre data-lang="js"><span class="c">// Never expires</span>
+wh.deploy(<span class="s">"./navbar"</span>, <span class="s">"navbar"</span>, <span class="s">"1.0.0"</span>);
+
+<span class="c">// Expires in 24 hours</span>
+wh.deploy(<span class="s">"./navbar"</span>, <span class="s">"navbar"</span>, <span class="s">"1.0.0"</span>, {
+  expiresInSeconds: <span class="n">86400</span>
+});
+
+<span class="c">// Rotate without re-uploading</span>
+<span class="k">await</span> wh.resign(<span class="s">"navbar"</span>, <span class="s">"1.0.0"</span>, {
+  expiresInSeconds: <span class="n">3600</span>
+});</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="section-label">Architecture</div>
+  <h2 class="section-title reveal">From source to screen —<br>fully automated.</h2>
+
+  <div class="arch-wrap reveal">
+    <div class="arch-flow">
+      <div class="arch-phase">
+        <div class="arch-label">Developer</div>
+        <div class="arch-steps">
+          <span class="arch-pill green">wh analyze</span>
+          <span class="arch-pill">wh breakdown</span>
+          <span class="arch-pill">bundle</span>
+          <span class="arch-pill green">AES-256-GCM</span>
+          <span class="arch-pill">SHA-256 hash</span>
+          <span class="arch-pill">S3 upload</span>
+          <span class="arch-pill green">HMAC sign</span>
+          <span class="arch-pill blue">DB register</span>
+          <span class="arch-pill">wh build</span>
+          <span class="arch-pill">wh zip</span>
+        </div>
+      </div>
+      <div class="arch-phase">
+        <div class="arch-label">Edge</div>
+        <div class="arch-steps">
+          <span class="arch-pill green">token validate ~5ms</span>
+          <span class="arch-pill">version resolve KV</span>
+          <span class="arch-pill blue">geo routing</span>
+          <span class="arch-pill">rate limit 100/min</span>
+        </div>
+      </div>
+      <div class="arch-phase">
+        <div class="arch-label">Browser</div>
+        <div class="arch-steps">
+          <span class="arch-pill">fetch manifest</span>
+          <span class="arch-pill">check expiry</span>
+          <span class="arch-pill green">stale-while-revalidate</span>
+          <span class="arch-pill blue">CDN failover</span>
+          <span class="arch-pill">load CDN assets</span>
+          <span class="arch-pill">resolve dep graph</span>
+          <span class="arch-pill green">AES decrypt</span>
+          <span class="arch-pill green">integrity verify</span>
+          <span class="arch-pill">domain check</span>
+          <span class="arch-pill">inject HTML/CSS/JS</span>
+          <span class="arch-pill blue">lifecycle hooks</span>
+          <span class="arch-pill">emit metrics</span>
+          <span class="arch-pill">WebGPU detect</span>
+          <span class="arch-pill green">SW offline cache</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px;" class="reveal">
+    <div class="section-label" style="margin-bottom: 12px;">Multi-CDN failover config</div>
+    <pre data-lang="json">{
+  <span class="n">"cdn"</span>: {
+    <span class="n">"url"</span>: <span class="s">"https://primary.cloudfront.net"</span>,
+    <span class="n">"fallbacks"</span>: [
+      <span class="s">"https://fallback.r2.dev"</span>,
+      <span class="s">"https://backup.b-cdn.net"</span>
+    ]
+  }
+}</pre>
+  </div>
+</section>
+
+<!-- CACHING -->
+<section>
+  <div class="section-label">Caching</div>
+  <h2 class="section-title reveal">Three-layer cache.<br>Always fast, always fresh.</h2>
+
+  <div class="cache-grid reveal">
+    <div class="cache-card">
+      <div class="cache-layer">Layer 1</div>
+      <div class="cache-name">localStorage</div>
+      <div class="cache-desc">Components under 50KB are stored inline. Near-instant reads on subsequent loads — no network required.</div>
+    </div>
+    <div class="cache-card">
+      <div class="cache-layer">Layer 2</div>
+      <div class="cache-name">IndexedDB</div>
+      <div class="cache-desc">Larger components (≥50KB) are stored in IndexedDB for structured persistence without size limits.</div>
+    </div>
+    <div class="cache-card">
+      <div class="cache-layer">Layer 3</div>
+      <div class="cache-name">Service Worker</div>
+      <div class="cache-desc">Offline + navigation cache via Service Worker. Users get full pages with no network. Stale-while-revalidate throughout.</div>
+    </div>
+  </div>
+</section>
+
+<!-- WEBGPU + OFFLINE -->
+<section>
+  <div class="section-label">Offline &amp; WebGPU</div>
+  <h2 class="section-title reveal">Works offline.<br>Detects GPU.</h2>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;" class="reveal">
+    <div>
+      <div class="section-label" style="margin-bottom: 12px;">Service Worker + offline page</div>
+      <pre data-lang="js"><span class="c">// Register SW for offline support</span>
+<span class="k">await</span> registerSW(<span class="s">"./webhanger.sw.js"</span>);
+
+<span class="c">// Custom offline page — zero external deps</span>
+<span class="k">await</span> setOfflinePage(
+  <span class="s">"&lt;h1&gt;We're offline&lt;/h1&gt;"</span> +
+  <span class="s">"&lt;button onclick='location.reload()'&gt;Retry&lt;/button&gt;"</span>,
+  <span class="s">"body { background:#030712; color:white; }"</span>
+);</pre>
+      <div style="margin-top:16px; background:var(--surface); border:1px solid var(--border); padding:18px;">
+        <div class="section-label" style="margin-bottom:10px;">Offline behaviour</div>
+        <div style="font-size:12px; color:var(--muted); line-height:2.1;">
+          <span style="color:var(--accent)">Online first visit</span> → load from CDN, cache everything<br>
+          <span style="color:var(--accent)">Online repeat visit</span> → SW cache, instant<br>
+          <span style="color:var(--accent)">Offline with cache</span> → full page from SW<br>
+          <span style="color:var(--accent3)">Offline no cache</span> → custom offline page
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="section-label" style="margin-bottom: 12px;">WebGPU detection</div>
+      <pre data-lang="js"><span class="c">// Auto-detected on SDK load</span>
+console.log(gpu.supported); <span class="c">// true | false</span>
+
+on(<span class="s">"gpu"</span>, ({ supported }) => {
+  console.log(<span class="s">"WebGPU:"</span>, supported);
+});
+
+<span class="c">// Plugin system example</span>
+use({
+  install({ on }) {
+    on(<span class="s">"load"</span>,   ({ time, source }) =>
+      analytics.track(<span class="s">"load"</span>, { time, source }));
+    on(<span class="s">"error"</span>,  ({ message }) =>
+      errorTracker.capture(message));
+    on(<span class="s">"gpu"</span>,    ({ supported }) =>
+      console.log(<span class="s">"GPU:"</span>, supported));
+    on(<span class="s">"sw"</span>,     ({ scope }) =>
+      console.log(<span class="s">"SW scope:"</span>, scope));
+  }
+});</pre>
+    </div>
+  </div>
+</section>
+<section>
+  <div class="section-label">Use Cases</div>
+  <h2 class="section-title reveal">Real-world<br>applications.</h2>
+
+  <div class="cases-grid reveal">
+    <div class="case-card">
+      <div class="case-icon">🏢</div>
+      <div class="case-title">Enterprise Micro-frontends</div>
+      <div class="case-desc">Shared UI across 50+ apps. Update once, propagate everywhere instantly.</div>
+    </div>
+    <div class="case-card">
+      <div class="case-icon">🎓</div>
+      <div class="case-title">Education Platforms</div>
+      <div class="case-desc">Push UI updates to all school sites simultaneously without their involvement.</div>
+    </div>
+    <div class="case-card">
+      <div class="case-icon">📡</div>
+      <div class="case-title">Low-bandwidth Regions</div>
+      <div class="case-desc">Cache once, serve offline via Service Worker. Works in challenging connectivity.</div>
+    </div>
+    <div class="case-card">
+      <div class="case-icon">🛡</div>
+      <div class="case-title">Security Platforms</div>
+      <div class="case-desc">Inject warnings and banners dynamically across all managed sites in real time.</div>
+    </div>
+    <div class="case-card">
+      <div class="case-icon">🏷</div>
+      <div class="case-title">White-label SaaS</div>
+      <div class="case-desc">Per-tenant component customization. Each customer sees their own branded UI.</div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <div class="footer-logo">
+      <div class="logo-icon" style="width:20px; height:20px;"></div>
+      WebHanger
+    </div>
+    <div class="footer-sub">Component-as-a-Service &mdash; ISC License</div>
+  </div>
+  <span class="footer-badge">v1.0.0</span>
+</footer>
+
+<script>
+  // ── Custom cursor ──
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top = my + 'px';
+  });
+
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  document.querySelectorAll('a, button, .cmd-card, .qs-step, .sec-item, .case-card, .arch-pill').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = '18px';
+      cursor.style.height = '18px';
+      ring.style.width = '50px';
+      ring.style.height = '50px';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = '10px';
+      cursor.style.height = '10px';
+      ring.style.width = '36px';
+      ring.style.height = '36px';
+    });
+  });
+
+  // ── Scroll reveal ──
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  revealEls.forEach((el, i) => {
+    el.style.transitionDelay = `${(i % 4) * 0.07}s`;
+    observer.observe(el);
+  });
+
+  // ── Terminal typing animation ──
+  const termLines = document.querySelectorAll('#termBody > div, #termBody > br');
+  termLines.forEach((line, i) => {
+    line.style.opacity = '0';
+    line.style.transition = 'opacity 0.25s';
+    setTimeout(() => { line.style.opacity = '1'; }, 800 + i * 160);
+  });
+
+  // ── Glowing accent pill on hover in arch ──
+  document.querySelectorAll('.arch-pill').forEach(pill => {
+    pill.addEventListener('mouseenter', () => {
+      pill.style.boxShadow = '0 0 12px rgba(91,255,192,0.3)';
+    });
+    pill.addEventListener('mouseleave', () => {
+      pill.style.boxShadow = '';
+    });
+  });
+
+  // ── Animated stat counters ──
+  const statVals = document.querySelectorAll('.stat-val');
+  const statObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const target = parseInt(el.textContent);
+      if (isNaN(target)) return;
+      let start = 0;
+      const step = Math.ceil(target / 30);
+      const interval = setInterval(() => {
+        start = Math.min(start + step, target);
+        el.textContent = start;
+        if (start >= target) clearInterval(interval);
+      }, 40);
+      statObs.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+  statVals.forEach(v => statObs.observe(v));
+</script>
+</body>
 </html>
