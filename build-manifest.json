@@ -1,0 +1,15 @@
+{
+  "builtAt": "2026-04-22T07:25:52.651Z",
+  "srcDir": "./docs",
+  "outDir": "E:\\webhanger_self\\dist",
+  "pages": [
+    {
+      "fileName": "index.html",
+      "size": 19186,
+      "assets": [
+        "index.5cf3cbe5.css",
+        "index.2ef5d620.js"
+      ]
+    }
+  ]
+}

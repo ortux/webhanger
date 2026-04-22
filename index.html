@@ -1,38 +1,448 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home — WebHanger</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { background:#030712; }
-    a { text-decoration:none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebHanger — Component-as-a-Service</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./index.5cf3cbe5.css">
 </head>
+
 <body>
-  <div data-wh-topnav></div>
-  
-  <div data-wh-hero></div>
-  <div data-wh-features></div>
-
-  <div data-wh-footer></div>
-  
-  <script src="https://unpkg.com/webhanger-front@latest/browser.min.js"></script>
-  <script>
-    async function whInit(pageComponents) {
-      const res = await fetch("./wh-manifest.json");
-      const m = await res.json();
-      await WebHangerFront.clearCache();
-      for (const [name, selector] of Object.entries(pageComponents)) {
-        const c = m.components[name];
-        if (c) await WebHangerFront.load(c.url, m.pid, c.token, c.expires, selector);
-      }
-    }
-  </script>
-
-  <script>
-    whInit({"topnav":"[data-wh-topnav]","hero":"[data-wh-hero]","features":"[data-wh-features]","footer":"[data-wh-footer]"});
-  </script>
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+    <nav>
+        <div class="nav-logo">
+            <div class="logo-icon"></div> WebHanger
+        </div>
+        <ul class="nav-links">
+            <li><a href="#quickstart">Start</a></li>
+            <li><a href="#commands">CLI</a></li>
+            <li><a href="#security">Security</a></li>
+            <li><a href="#architecture">Arch</a></li>
+        </ul><button class="nav-cta">npm install -g webhanger</button>
+    </nav>
+    <section class="hero">
+        <div class="hero-glow"></div>
+        <div class="hero-glow2"></div>
+        <p class="hero-eyebrow">Component-as-a-Service</p>
+        <h1 class="hero-title">Ship<br><em>anywhere.</em><br>Load instantly.</h1>
+        <p class="hero-sub">Bundle once. AES-256 encrypt. Deploy to edge CDN. Drop into any site with a single HTML tag
+            — zero configuration, zero exposure.</p>
+        <div class="hero-actions"><a href="#quickstart" class="btn-primary"><span>→</span> Quick Start </a><a
+                href="#commands" class="btn-ghost">CLI Reference</a></div>
+        <div class="hero-terminal">
+            <div class="terminal-bar">
+                <div class="terminal-dot"></div>
+                <div class="terminal-dot"></div>
+                <div class="terminal-dot"></div><span class="terminal-title">webhanger — zsh</span>
+            </div>
+            <div class="terminal-body" id="termBody">
+                <div><span class="t-prompt">~</span><span class="t-comment"># install once</span></div>
+                <div><span class="t-prompt">~</span> npm install -g webhanger</div>
+                <div class="t-dim">+ webhanger@1.0.0 added</div><br>
+                <div><span class="t-prompt">~/myapp</span> wh init</div>
+                <div class="t-info">? Project name: <span class="t-cmd">my-app</span></div>
+                <div class="t-info">? Storage: <span class="t-cmd">s3</span></div>
+                <div class="t-success">✓ Bucket created, CDN provisioned</div><br>
+                <div><span class="t-prompt">~/myapp</span> wh ship ./components ./docs 1.0.0</div>
+                <div class="t-success">🚀 [1/4] navbar@1.0.0 ✅ hero@1.0.0 ✅</div>
+                <div class="t-success">🔍 [2/4] Resolving graph...</div>
+                <div class="t-success">🏗️ [3/4] Building → 4.2 kB</div>
+                <div class="t-success">📦 [4/4] deploy.zip ready</div><br>
+                <div><span class="t-prompt">~/myapp</span><span class="type-cursor"></span></div>
+            </div>
+        </div>
+    </section>
+    <div class="marquee-wrap">
+        <div class="marquee-track"><span class="accent">AES-256-GCM ENCRYPTION</span><span>·</span><span>EDGE CDN
+                DELIVERY</span><span>·</span><span class="accent">HMAC-SHA256 SIGNED URLS</span><span>·</span><span>S3 /
+                R2 / MINIO</span><span>·</span><span class="accent">DEPENDENCY GRAPH</span><span>·</span><span>FIREBASE
+                / SUPABASE</span><span>·</span><span class="accent">SERVICE WORKER
+                CACHE</span><span>·</span><span>MULTI-CDN FAILOVER</span><span>·</span><span class="accent">SHADOW DOM
+                ISOLATION</span><span>·</span><span>STALE-WHILE-REVALIDATE</span><span>·</span><span
+                class="accent">AES-256-GCM ENCRYPTION</span><span>·</span><span>EDGE CDN
+                DELIVERY</span><span>·</span><span class="accent">HMAC-SHA256 SIGNED URLS</span><span>·</span><span>S3 /
+                R2 / MINIO</span><span>·</span><span class="accent">DEPENDENCY GRAPH</span><span>·</span><span>FIREBASE
+                / SUPABASE</span><span>·</span><span class="accent">SERVICE WORKER
+                CACHE</span><span>·</span><span>MULTI-CDN FAILOVER</span><span>·</span><span class="accent">SHADOW DOM
+                ISOLATION</span><span>·</span><span>STALE-WHILE-REVALIDATE</span><span>·</span></div>
+    </div>
+    <main>
+        <section id="quickstart" style="border-top:none; padding-top: 80px;">
+            <div class="section-label">Packages</div>
+            <h2 class="section-title reveal">Two packages.<br>Everything you need.</h2>
+            <div class="stat-strip reveal">
+                <div class="stat-box">
+                    <div class="stat-val">256</div>
+                    <div class="stat-label">AES bit encryption</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val">3</div>
+                    <div class="stat-label">Cache layers</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val">6</div>
+                    <div class="stat-label">Framework targets</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val">0</div>
+                    <div class="stat-label">Lines of config to load</div>
+                </div>
+            </div>
+            <table class="pkg-table reveal">
+                <thead>
+                    <tr>
+                        <th>Package</th>
+                        <th>Install</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="pkg-name">webhanger</span></td>
+                        <td><code class="pkg-install">npm install -g webhanger</code></td>
+                        <td style="color:var(--muted)">CLI + Node.js library for deploy, build, encrypt, manage</td>
+                    </tr>
+                    <tr>
+                        <td><span class="pkg-name">webhanger-front</span></td>
+                        <td><code class="pkg-install">npm install webhanger-front</code></td>
+                        <td style="color:var(--muted)">Browser SDK for loading, decrypting, and rendering components
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section>
+            <div class="section-label">Quick Start</div>
+            <h2 class="section-title reveal">Up and running<br>in three steps.</h2>
+            <div class="quickstart-grid">
+                <div class="qs-step reveal">
+                    <div class="qs-num">01</div>
+                    <div class="qs-title">Install the CLI</div>
+                    <pre data-lang="bash"><span class="t-comment"># Global install</span> npm install -g webhanger</pre>
+                </div>
+                <div class="qs-step reveal">
+                    <div class="qs-num">02</div>
+                    <div class="qs-title">Init your project</div>
+                    <pre
+                        data-lang="bash">wh init <span class="t-comment"># Provisions S3 + CloudFront automatically</span><span class="t-comment"># Generates webhanger.config.json</span></pre>
+                </div>
+                <div class="qs-step reveal" style="grid-column: span 2;">
+                    <div class="qs-num">03</div>
+                    <div class="qs-title">Ship everything in one command</div>
+                    <pre
+                        data-lang="bash">wh ship ./components ./docs 1.0.0 ./dist <span class="t-comment"># Encrypts → uploads → builds → zips → done</span></pre>
+                </div>
+            </div>
+            <div style="margin-top: 32px;" class="reveal">
+                <div class="section-label" style="margin-bottom: 16px;">Load in any HTML page — zero JS required beyond
+                    the SDK</div>
+                <pre
+                    data-lang="html"><span class="k">&lt;script</span><span class="n">src</span>=<span class="s">"https://unpkg.com/webhanger-front@latest/browser.min.js"</span><span class="k">&gt;&lt;/script&gt;</span><span class="k">&lt;script&gt;</span>WebHangerFront.initialize(<span class="s">"./wh-manifest.json"</span>);<span class="k">&lt;/script&gt;</span><span class="k">&lt;wh-component</span><span class="n">name</span>=<span class="s">"navbar"</span><span class="k">&gt;&lt;/wh-component&gt;</span><span class="k">&lt;wh-component</span><span class="n">name</span>=<span class="s">"hero"</span><span class="k">&gt;&lt;/wh-component&gt;</span><span class="k">&lt;wh-component</span><span class="n">name</span>=<span class="s">"footer"</span><span class="n">sandbox</span><span class="k">&gt;&lt;/wh-component&gt;</span></pre>
+            </div>
+        </section>
+        <section id="commands">
+            <div class="section-label">CLI Reference</div>
+            <h2 class="section-title reveal">Every command<br>you need.</h2>
+            <div class="commands-grid reveal">
+                <div class="cmd-card">
+                    <div class="cmd-name">wh init</div>
+                    <div class="cmd-desc">Interactive setup. Provisions S3 bucket + CloudFront distribution
+                        automatically. Generates config.</div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">wh ship <span class="cmd-star">⭐ main</span></div>
+                    <div class="cmd-desc">Deploy + build + zip in one shot. Encrypts all components, resolves dependency
+                        graph, minifies site.</div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">wh deploy</div>
+                    <div class="cmd-desc">Deploy a single component. Prompts for token and expiry settings.</div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">wh graph-deploy</div>
+                    <div class="cmd-desc">Deploy all components in a directory and resolve the full dependency graph.
+                    </div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">wh build</div>
+                    <div class="cmd-desc">Production build — minifies HTML, inlines local CSS and JS for any static
+                        site.</div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">wh zip</div>
+                    <div class="cmd-desc">Zip a directory for deployment to Netlify, S3, cPanel, or any static host.
+                    </div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">wh analyze</div>
+                    <div class="cmd-desc">Detect framework, styling approach, and CDN dependencies automatically from a
+                        component directory.</div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">wh convert</div>
+                    <div class="cmd-desc">Convert vanilla HTML/CSS/JS to React, Vue, Svelte, Next, Angular, or Astro.
+                    </div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">wh access</div>
+                    <div class="cmd-desc">Role-based access control for teams. Grant, revoke, and list API keys with
+                        scoped permissions.</div>
+                </div>
+            </div>
+            <div class="reveal">
+                <div class="section-label" style="margin-bottom: 16px;">wh ship output</div>
+                <pre
+                    data-lang="output"><span class="t-success">🚀 [1/4] Deploying components...</span><span class="t-cmd">navbar@1.0.0... ✅</span><span class="t-cmd">hero@1.0.0... ✅</span><span class="t-info">🔍 [2/4] Resolving dependency graph...</span><span class="t-success">🏗️ [3/4] Building ./docs → ./dist...</span><span class="t-dim">index.html 4.2 kB</span><span class="t-success">📦 [4/4] Zipping ./dist...</span><span class="t-success">✅ Ship complete! deploy.zip (12.4 kB)</span></pre>
+            </div>
+        </section>
+        <section>
+            <div class="section-label">Component Structure</div>
+            <h2 class="section-title reveal">Simple.<br>Predictable. Portable.</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;" class="reveal">
+                <div>
+                    <div class="section-label" style="margin-bottom: 12px;">File layout</div>
+                    <div class="tree">
+                        <div><span class="tree-dir">components/</span></div>
+                        <div>&nbsp;&nbsp;<span class="tree-dir">navbar/</span></div>
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-main">index.html</span>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-note">← markup</span></div>
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-file">style.css</span>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-note">← styles</span></div>
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-file">script.js</span>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-note">← behaviour</span></div>
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tree-file">webhanger.component.json</span></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-label" style="margin-bottom: 12px;">webhanger.component.json</div>
+                    <pre
+                        data-lang="json">{ <span class="n">"assets"</span>: [ { <span class="n">"type"</span>: <span class="s">"script"</span>, <span class="n">"url"</span>: <span class="s">"cdn.tailwindcss.com"</span> }, { <span class="n">"type"</span>: <span class="s">"script"</span>, <span class="n">"url"</span>: <span class="s">"gsap.min.js"</span> } ], <span class="n">"dependencies"</span>: [<span class="s">"navbar@1.0.0"</span>, <span class="s">"chart@2.0.0"</span>] }</pre>
+                </div>
+            </div>
+        </section>
+        <section id="security">
+            <div class="section-label">Security</div>
+            <h2 class="section-title reveal">Encrypted at every<br>layer of the stack.</h2>
+            <div class="security-grid">
+                <div class="sec-items reveal">
+                    <div class="sec-item">
+                        <div class="sec-icon">🔐</div>
+                        <div>
+                            <div class="sec-title">AES-256-GCM Encryption</div>
+                            <div class="sec-desc">Every chunk (HTML/CSS/JS) is encrypted before upload. Key derived from
+                                SHA-256(projectId + salt). IV + tag + ciphertext stored as base64.</div>
+                        </div>
+                    </div>
+                    <div class="sec-item">
+                        <div class="sec-icon">🔏</div>
+                        <div>
+                            <div class="sec-title">HMAC-SHA256 Signed URLs</div>
+                            <div class="sec-desc">Every request is signed: token = HMAC-SHA256(projectId:path:expires,
+                                secretKey). Tamper-proof and project-scoped.</div>
+                        </div>
+                    </div>
+                    <div class="sec-item">
+                        <div class="sec-icon">✅</div>
+                        <div>
+                            <div class="sec-title">Integrity Check</div>
+                            <div class="sec-desc">SHA-256 hash of raw content stored in payload. Verified after
+                                decryption to detect any tampering in transit.</div>
+                        </div>
+                    </div>
+                    <div class="sec-item">
+                        <div class="sec-icon">🌐</div>
+                        <div>
+                            <div class="sec-title">Domain Restriction</div>
+                            <div class="sec-desc">Components refuse to load outside specified domains. Configured via
+                                <code style="color:var(--accent); font-size:11px">allowedDomains</code> option in the
+                                SDK.</div>
+                        </div>
+                    </div>
+                    <div class="sec-item">
+                        <div class="sec-icon">⏱</div>
+                        <div>
+                            <div class="sec-title">Token Expiry</div>
+                            <div class="sec-desc">Tokens can be set to never expire, or to expire in a defined number of
+                                seconds. Rotate without redeploying via <code
+                                    style="color:var(--accent); font-size:11px">wh.resign()</code>.</div>
+                        </div>
+                    </div>
+                    <div class="sec-item">
+                        <div class="sec-icon">📄</div>
+                        <div>
+                            <div class="sec-title">Manifest-based Delivery</div>
+                            <div class="sec-desc">Tokens, projectId, and CDN URLs never appear in HTML. Fetched at
+                                runtime from <code style="color:var(--accent); font-size:11px">wh-manifest.json</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <div class="section-label" style="margin-bottom: 16px;">Access roles</div>
+                    <table class="roles-table" style="background: var(--surface); border: 1px solid var(--border);">
+                        <thead>
+                            <tr>
+                                <th>Role</th>
+                                <th>Deploy</th>
+                                <th>Read</th>
+                                <th>Delete</th>
+                                <th>Manage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="role-badge role-owner">owner</span></td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                            </tr>
+                            <tr>
+                                <td><span class="role-badge role-admin">admin</span></td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                            </tr>
+                            <tr>
+                                <td><span class="role-badge role-deployer">deployer</span></td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="cross">–</td>
+                                <td class="cross">–</td>
+                            </tr>
+                            <tr>
+                                <td><span class="role-badge role-viewer">viewer</span></td>
+                                <td class="cross">–</td>
+                                <td class="check">✓</td>
+                                <td class="cross">–</td>
+                                <td class="cross">–</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 24px;">
+                        <div class="section-label" style="margin-bottom: 12px;">Token expiry example</div>
+                        <pre
+                            data-lang="js"><span class="c">// Never expires</span> wh.deploy(<span class="s">"./navbar"</span>, <span class="s">"navbar"</span>, <span class="s">"1.0.0"</span>); <span class="c">// Expires in 24 hours</span> wh.deploy(<span class="s">"./navbar"</span>, <span class="s">"navbar"</span>, <span class="s">"1.0.0"</span>, { expiresInSeconds: <span class="n">86400</span> }); <span class="c">// Rotate without re-uploading</span><span class="k">await</span> wh.resign(<span class="s">"navbar"</span>, <span class="s">"1.0.0"</span>, { expiresInSeconds: <span class="n">3600</span> });</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="architecture">
+            <div class="section-label">Architecture</div>
+            <h2 class="section-title reveal">From source to screen —<br>fully automated.</h2>
+            <div class="arch-wrap reveal">
+                <div class="arch-flow">
+                    <div class="arch-phase">
+                        <div class="arch-label">Developer</div>
+                        <div class="arch-steps"><span class="arch-pill green">wh analyze</span><span
+                                class="arch-pill">bundle</span><span class="arch-pill green">AES-256-GCM</span><span
+                                class="arch-pill">SHA-256 hash</span><span class="arch-pill">S3 upload</span><span
+                                class="arch-pill green">HMAC sign</span><span class="arch-pill blue">Firestore
+                                register</span><span class="arch-pill">wh build</span><span class="arch-pill">wh
+                                zip</span></div>
+                    </div>
+                    <div class="arch-phase">
+                        <div class="arch-label">Edge</div>
+                        <div class="arch-steps"><span class="arch-pill green">token validate</span><span
+                                class="arch-pill">version resolve</span><span class="arch-pill blue">geo
+                                routing</span><span class="arch-pill">rate limit 100/min</span></div>
+                    </div>
+                    <div class="arch-phase">
+                        <div class="arch-label">Browser</div>
+                        <div class="arch-steps"><span class="arch-pill">fetch manifest</span><span
+                                class="arch-pill">check expiry</span><span
+                                class="arch-pill green">stale-while-revalidate</span><span class="arch-pill blue">CDN
+                                failover</span><span class="arch-pill">load CDN assets</span><span
+                                class="arch-pill">resolve dep graph</span><span class="arch-pill green">AES
+                                decrypt</span><span class="arch-pill green">integrity verify</span><span
+                                class="arch-pill">domain check</span><span class="arch-pill">inject
+                                HTML/CSS/JS</span><span class="arch-pill blue">lifecycle hooks</span><span
+                                class="arch-pill">emit metrics</span></div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 24px;" class="reveal">
+                <div class="section-label" style="margin-bottom: 12px;">Multi-CDN failover config</div>
+                <pre
+                    data-lang="json">{ <span class="n">"cdn"</span>: { <span class="n">"url"</span>: <span class="s">"https://primary.cloudfront.net"</span>, <span class="n">"fallbacks"</span>: [ <span class="s">"https://fallback.r2.dev"</span>, <span class="s">"https://backup.b-cdn.net"</span> ] } }</pre>
+            </div>
+        </section>
+        <section>
+            <div class="section-label">Caching</div>
+            <h2 class="section-title reveal">Three-layer cache.<br>Always fast, always fresh.</h2>
+            <div class="cache-grid reveal">
+                <div class="cache-card">
+                    <div class="cache-layer">Layer 1</div>
+                    <div class="cache-name">localStorage</div>
+                    <div class="cache-desc">Components under 50KB are stored inline. Near-instant reads on subsequent
+                        loads — no network required.</div>
+                </div>
+                <div class="cache-card">
+                    <div class="cache-layer">Layer 2</div>
+                    <div class="cache-name">IndexedDB</div>
+                    <div class="cache-desc">Larger components (≥50KB) are stored in IndexedDB for structured persistence
+                        without size limits.</div>
+                </div>
+                <div class="cache-card">
+                    <div class="cache-layer">Layer 3</div>
+                    <div class="cache-name">Service Worker</div>
+                    <div class="cache-desc">Offline fallback via SW cache. Users get components even with no network.
+                        Stale-while-revalidate strategy throughout.</div>
+                </div>
+            </div>
+        </section>
+        <section>
+            <div class="section-label">Use Cases</div>
+            <h2 class="section-title reveal">Real-world<br>applications.</h2>
+            <div class="cases-grid reveal">
+                <div class="case-card">
+                    <div class="case-icon">🏢</div>
+                    <div class="case-title">Enterprise Micro-frontends</div>
+                    <div class="case-desc">Shared UI across 50+ apps. Update once, propagate everywhere instantly.</div>
+                </div>
+                <div class="case-card">
+                    <div class="case-icon">🎓</div>
+                    <div class="case-title">Education Platforms</div>
+                    <div class="case-desc">Push UI updates to all school sites simultaneously without their involvement.
+                    </div>
+                </div>
+                <div class="case-card">
+                    <div class="case-icon">📡</div>
+                    <div class="case-title">Low-bandwidth Regions</div>
+                    <div class="case-desc">Cache once, serve offline via Service Worker. Works in challenging
+                        connectivity.</div>
+                </div>
+                <div class="case-card">
+                    <div class="case-icon">🛡</div>
+                    <div class="case-title">Security Platforms</div>
+                    <div class="case-desc">Inject warnings and banners dynamically across all managed sites in real
+                        time.</div>
+                </div>
+                <div class="case-card">
+                    <div class="case-icon">🏷</div>
+                    <div class="case-title">White-label SaaS</div>
+                    <div class="case-desc">Per-tenant component customization. Each customer sees their own branded UI.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="footer-left">
+            <div class="footer-logo">
+                <div class="logo-icon" style="width:20px; height:20px;"></div> WebHanger
+            </div>
+            <div class="footer-sub">Component-as-a-Service &mdash; ISC License</div>
+        </div><span class="footer-badge">v1.0.0</span>
+    </footer>
+    <script src="./index.2ef5d620.js"></script>
 </body>
+
 </html>
